@@ -1,0 +1,117 @@
+body {
+  margin: 0;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background-color: #f8f9fa;
+}
+.header-escuro {
+  background-color: #1e252b;
+  color: white;
+  padding: 15px 40px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.header-titulo {
+  font-size: 20px;
+  font-weight: bold;
+  cursor: pointer;
+}
+.nav-link {
+  background: none;
+  border: none;
+  color: #adb5bd;
+  font-size: 16px;
+  margin-left: 20px;
+  cursor: pointer;
+  padding: 5px 10px;
+}
+.nav-link.active, .nav-link:hover {
+  color: white;
+  border-bottom: 2px solid #007bff;
+}
+.conteudo-principal {
+  padding: 40px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+.titulo-sessao {
+  font-size: 28px;
+  color: #212529;
+  margin-bottom: 20px;
+}
+.tabela-layout {
+  width: 100%;
+  border-collapse: collapse;
+  background: white;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+.tabela-layout th, .tabela-layout td {
+  padding: 12px 15px;
+  text-align: left;
+  border-bottom: 1px solid #dee2e6;
+}
+.tabela-layout th {
+  background-color: #fff;
+  color: #495057;
+  font-weight: bold;
+}
+.btn-excluir {
+  background-color: #dc3545;
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+.form-container {
+  background: white;
+  padding: 30px;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+  max-width: 600px;
+}
+.form-grupo {
+  margin-bottom: 15px;
+}
+.form-grupo label {
+  display: block;
+  margin-bottom: 5px;
+  font-weight: 600;
+}
+.form-grupo input, .form-select {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #ced4da;
+  border-radius: 4px;
+  box-sizing: border-box;
+}
+.btn-salvar {
+  background-color: #007bff;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 16px;
+}
+.cards-container {
+  display: flex;
+  gap: 20px;
+}
+.card {
+  flex: 1;
+  padding: 20px;
+  border-radius: 6px;
+  color: white;
+}
+.card-receita { background-color: #28a745; }
+.card-despesa { background-color: #dc3545; }
+.card-saldo.positivo { background-color: #17a2b8; }
+.card-saldo.negatto { background-color: #6c757d; }
+.txt-receita { color: #28a745; font-weight: bold; }
+.txt-despesa { color: #dc3545; font-weight: bold; }
+.txt-saldo.positivo { color: #28a745; font-weight: bold; }
+.txt-saldo.negativo { color: #dc3545; font-weight: bold; }
+.alerta { padding: 10px; margin-bottom: 15px; border-radius: 4px; }
+.alerta.erro { background-color: #f8d7da; color: #721c24; }
+.alerta.sucesso { background-color: #d4edda; color: #155724; }

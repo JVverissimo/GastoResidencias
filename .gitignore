@@ -1,0 +1,11 @@
+## .NET
+bin/
+obj/
+
+## Node / Frontend
+Views/node_modules/
+Views/dist/
+
+## Segredos
+appsettings.*.local.json
+.env
