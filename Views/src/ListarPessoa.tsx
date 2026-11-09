@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import api from './services/api';
+import api, { logEstruturado } from './services/api';
 
 function ListarPessoas() {
   const [pessoas, setPessoas] = useState([]);
@@ -13,7 +13,10 @@ function ListarPessoas() {
       const response = await api.get('/Pessoas');
       setPessoas(response.data);
     } catch (error) {
-      console.error("Erro ao buscar pessoas", error);
+      logEstruturado('ERROR', 'Erro ao buscar pessoas', {
+        correlationId: error.response?.headers?.['x-correlation-id'] || error.config?.metadata?.correlationId,
+        errorMessage: error.message,
+      });
     }
   };
 

@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using FinancialController.Data;
 using project_API.Models;
+using project_API.Services;
 
 namespace project_API.Controllers
 {
@@ -10,15 +11,25 @@ namespace project_API.Controllers
     public class TotaisController : ControllerBase
     {
         private readonly ApplicationDbContext _context;
+        private readonly ILogger<TotaisController> _logger;
+        private readonly MetricsCollector _metricsCollector;
 
-        public TotaisController(ApplicationDbContext context)
+        public TotaisController(
+            ApplicationDbContext context,
+            ILogger<TotaisController> logger,
+            MetricsCollector metricsCollector)
         {
             _context = context;
+            _logger = logger;
+            _metricsCollector = metricsCollector;
         }
 
         [HttpGet]
         public async Task<IActionResult> GetTotaisGerais()
         {
+            _metricsCollector.IncrementConsultaTotais();
+            _logger.LogInformation("Iniciando cálculo de totais gerais consolidados (CorrelationId: {CorrelationId})", HttpContext.TraceIdentifier);
+
             var pessoas = await _context.Pessoas.Include(p => p.Transacoes).ToListAsync();
 
             var relatorioPessoas = pessoas.Select(p => {
@@ -38,13 +49,22 @@ namespace project_API.Controllers
 
             var geralReceitas = relatorioPessoas.Sum(r => r.TotalReceitas);
             var geralDespesas = relatorioPessoas.Sum(r => r.TotalDespesas);
+            var saldoLiquidoGeral = geralReceitas - geralDespesas;
+
+            _logger.LogInformation(
+                "Totais gerais calculados para {TotalPessoas} pessoas: Receitas={TotalGeralReceitas}, Despesas={TotalGeralDespesas}, Saldo={SaldoLiquidoGeral} (CorrelationId: {CorrelationId})",
+                relatorioPessoas.Count,
+                geralReceitas,
+                geralDespesas,
+                saldoLiquidoGeral,
+                HttpContext.TraceIdentifier);
 
             var respostaFinal = new {
                 Pessoas = relatorioPessoas,
                 ConsolidadoGeral = new {
                     TotalGeralReceitas = geralReceitas,
                     TotalGeralDespesas = geralDespesas,
-                    SaldoLiquidoGeral = geralReceitas - geralDespesas
+                    SaldoLiquidoGeral = saldoLiquidoGeral
                 }
             };
 

@@ -1,0 +1,10 @@
+**/bin/
+**/obj/
+**/out/
+Views/node_modules/
+Views/dist/
+.git/
+.vs/
+.vscode/
+*.user
+*.suo

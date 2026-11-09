@@ -4,3 +4,8 @@ GET {{project_API_HostAddress}}/weatherforecast/
 Accept: application/json
 
 ###
+
+GET {{project_API_HostAddress}}/metrics
+Accept: text/plain
+
+###

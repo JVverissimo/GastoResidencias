@@ -1,0 +1,31 @@
+global:
+  # Frequência padrão de coleta (pull) das métricas nos alvos configurados
+  scrape_interval: 5s
+  # Tempo limite para cada requisição de coleta antes de considerar falha
+  scrape_timeout: 4s
+  # Frequência de avaliação de regras de alerta e gravação
+  evaluation_interval: 5s
+
+scrape_configs:
+  # 1. Monitoramento da API de Gastos Residenciais (.NET 8)
+  - job_name: "gasto-residencias-api"
+    metrics_path: "/metrics"
+    scheme: "http"
+    scrape_interval: 5s
+    static_configs:
+      # No Docker Compose, o serviço "api" responde na porta 5076 dentro da rede compartilhada.
+      # Caso execute a API diretamente no host fora do Docker, utilize "host.docker.internal:5076" ou "localhost:5076".
+      - targets:
+          - "api:5076"
+        labels:
+          application: "GastoResidenciasAPI"
+          environment: "development"
+          service: "financial-controller"
+
+  # 2. Automonitoramento do próprio servidor Prometheus
+  - job_name: "prometheus"
+    metrics_path: "/metrics"
+    scheme: "http"
+    static_configs:
+      - targets:
+          - "localhost:9090"
