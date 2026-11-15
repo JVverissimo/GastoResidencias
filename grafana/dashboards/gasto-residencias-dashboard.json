@@ -35,23 +35,32 @@
     },
     {
       "id": 2,
-      "title": "RED - Percentual de Falhas HTTP (Errors %)",
+      "title": "RED - Total de Requisições com Erro (red_requests_errors_total)",
       "type": "timeseries",
       "gridPos": { "h": 8, "w": 12, "x": 12, "y": 0 },
       "datasource": { "type": "prometheus", "uid": "prometheus_ds" },
       "fieldConfig": {
         "defaults": {
-          "unit": "percent",
-          "min": 0,
-          "max": 100
+          "unit": "short",
+          "min": 0
         },
         "overrides": []
       },
       "targets": [
         {
-          "expr": "red_requests_error_percentage",
-          "legendFormat": "Percentual de Erros (%)",
+          "expr": "red_requests_errors_total",
+          "legendFormat": "Total de Erros (red_requests_errors_total)",
           "refId": "A"
+        },
+        {
+          "expr": "red_requests_errors_by_class_total{status_class=\"4xx\"}",
+          "legendFormat": "Erros 4xx (Validação / Regra de Negócio)",
+          "refId": "B"
+        },
+        {
+          "expr": "red_requests_errors_by_class_total{status_class=\"5xx\"}",
+          "legendFormat": "Erros 5xx (Falha Interna / Servidor)",
+          "refId": "C"
         }
       ]
     },
@@ -92,30 +101,31 @@
     },
     {
       "id": 4,
-      "title": "Negócio - Volume Financeiro Transacionado (R$)",
+      "title": "Negócio - Volume Financeiro Transacionado (business_volume_transacionado_reais_total)",
       "type": "timeseries",
       "gridPos": { "h": 8, "w": 12, "x": 12, "y": 8 },
       "datasource": { "type": "prometheus", "uid": "prometheus_ds" },
       "fieldConfig": {
         "defaults": {
-          "unit": "currencyBRL"
+          "unit": "currencyBRL",
+          "min": 0
         },
         "overrides": []
       },
       "targets": [
         {
           "expr": "business_volume_transacionado_reais_total",
-          "legendFormat": "Volume Bruto Total (Sessão)",
+          "legendFormat": "Volume Bruto Total (business_volume_transacionado_reais_total)",
           "refId": "A"
         },
         {
           "expr": "business_volume_transacionado_por_tipo_reais_total{tipo=\"Receita\"}",
-          "legendFormat": "Volume Receitas",
+          "legendFormat": "Volume Receitas (R$)",
           "refId": "B"
         },
         {
           "expr": "business_volume_transacionado_por_tipo_reais_total{tipo=\"Despesa\"}",
-          "legendFormat": "Volume Despesas",
+          "legendFormat": "Volume Despesas (R$)",
           "refId": "C"
         }
       ]

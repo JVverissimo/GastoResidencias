@@ -53,6 +53,20 @@ builder.Services.AddSwaggerGen();
 
 var app = builder.Build(); 
 
+// Aplica as migrations automaticamente caso o banco PostgreSQL esteja acessível
+using (var scope = app.Services.CreateScope())
+{
+    try
+    {
+        var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+        db.Database.Migrate();
+    }
+    catch (Exception ex)
+    {
+        app.Logger.LogWarning("Não foi possível aplicar as migrations automaticamente na inicialização ({ExceptionType})", ex.GetType().Name);
+    }
+}
+
 // Gera e propaga o CorrelationId no exato momento em que a requisição entra no sistema
 app.UseMiddleware<CorrelationIdMiddleware>();
 

@@ -45,10 +45,16 @@ namespace project_API.Middleware
                 ["RequestPath"] = maskedPath
             };
 
+            var isMetricsEndpoint = context.Request.Path.StartsWithSegments("/metrics")
+                || context.Request.Path.StartsWithSegments("/api/metrics");
+
             using (_logger.BeginScope(scopeState))
             {
                 var stopwatch = Stopwatch.StartNew();
-                _metricsCollector.IncrementRequestsInProgress();
+                if (!isMetricsEndpoint)
+                {
+                    _metricsCollector.IncrementRequestsInProgress();
+                }
 
                 _logger.LogInformation(
                     "Requisição recebida {HttpMethod} {RequestPath} com CorrelationId {CorrelationId}",
@@ -61,21 +67,24 @@ namespace project_API.Middleware
                     await _next(context);
                     stopwatch.Stop();
 
-                    var (ratePerSec60s, errorPct) = _metricsCollector.RecordHttpRequest(
-                        context.Request.Method,
-                        maskedRouteOnly,
-                        context.Response.StatusCode,
-                        stopwatch.Elapsed.TotalMilliseconds);
+                    if (!isMetricsEndpoint)
+                    {
+                        var (ratePerSec60s, errorPct) = _metricsCollector.RecordHttpRequest(
+                            context.Request.Method,
+                            maskedRouteOnly,
+                            context.Response.StatusCode,
+                            stopwatch.Elapsed.TotalMilliseconds);
 
-                    _logger.LogInformation(
-                        "Requisição finalizada {HttpMethod} {RequestPath} com status {StatusCode} em {ElapsedMs}ms | RED Rate60s={RequestRatePerSec:F2}req/s ErrorPct={ErrorPercentage:F2}% (CorrelationId: {CorrelationId})",
-                        context.Request.Method,
-                        maskedPath,
-                        context.Response.StatusCode,
-                        stopwatch.ElapsedMilliseconds,
-                        ratePerSec60s,
-                        errorPct,
-                        correlationId);
+                        _logger.LogInformation(
+                            "Requisição finalizada {HttpMethod} {RequestPath} com status {StatusCode} em {ElapsedMs}ms | RED Rate60s={RequestRatePerSec:F2}req/s ErrorPct={ErrorPercentage:F2}% (CorrelationId: {CorrelationId})",
+                            context.Request.Method,
+                            maskedPath,
+                            context.Response.StatusCode,
+                            stopwatch.ElapsedMilliseconds,
+                            ratePerSec60s,
+                            errorPct,
+                            correlationId);
+                    }
                 }
                 catch (Exception ex)
                 {
@@ -101,7 +110,10 @@ namespace project_API.Middleware
                 }
                 finally
                 {
-                    _metricsCollector.DecrementRequestsInProgress();
+                    if (!isMetricsEndpoint)
+                    {
+                        _metricsCollector.DecrementRequestsInProgress();
+                    }
                 }
             }
         }

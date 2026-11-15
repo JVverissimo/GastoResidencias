@@ -1,4 +1,20 @@
 services:
+  # 0. Banco de Dados PostgreSQL
+  postgres:
+    image: postgres:16-alpine
+    container_name: gasto-residencias-db
+    environment:
+      - POSTGRES_DB=gasto_residencias
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - observability-net
+    restart: unless-stopped
+
   # 1. Aplicação Backend (.NET 8 API)
   api:
     build:
@@ -10,7 +26,9 @@ services:
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - ASPNETCORE_URLS=http://+:5076
-      - ConnectionStrings__DefaultConnection=${ConnectionStrings__DefaultConnection:-}
+      - ConnectionStrings__DefaultConnection=${ConnectionStrings__DefaultConnection:-Host=postgres;Port=5432;Database=gasto_residencias;Username=postgres;Password=postgres}
+    depends_on:
+      - postgres
     networks:
       - observability-net
     restart: unless-stopped
@@ -61,5 +79,6 @@ networks:
     driver: bridge
 
 volumes:
+  postgres_data:
   prometheus_data:
   grafana_data:
