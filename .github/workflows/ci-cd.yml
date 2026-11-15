@@ -1,0 +1,127 @@
+name: GastoResidencias CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - main
+      - "feat/**"
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+env:
+  DOTNET_VERSION: "8.0.x"
+  NODE_VERSION: "20"
+
+jobs:
+  # =========================================================================
+  # JOB 1: Build e Empacotamento do Backend (.NET 8 API)
+  # =========================================================================
+  build-backend:
+    name: "1. Build Backend (.NET 8 API)"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout do código
+        uses: actions/checkout@v4
+
+      - name: Configurar .NET SDK ${{ env.DOTNET_VERSION }}
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Restaurar dependências (.NET)
+        run: dotnet restore project_API.csproj
+
+      - name: Compilar API em modo Release
+        run: dotnet build project_API.csproj --configuration Release --no-restore
+
+      - name: Publicar artefato da API
+        run: dotnet publish project_API.csproj --configuration Release --output ./publish --no-build
+
+      - name: Salvar artefato do Backend
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-publish
+          path: ./publish
+
+  # =========================================================================
+  # JOB 2: Build do Frontend (React + Vite em Views/)
+  # =========================================================================
+  build-frontend:
+    name: "2. Build Frontend (React + Vite)"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout do código
+        uses: actions/checkout@v4
+
+      - name: Configurar Node.js ${{ env.NODE_VERSION }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "npm"
+          cache-dependency-path: Views/package-lock.json
+
+      - name: Instalar dependências do Frontend
+        working-directory: ./Views
+        run: npm ci
+
+      - name: Gerar build de produção do Frontend
+        working-directory: ./Views
+        run: npm run build
+
+      - name: Salvar artefato do Frontend
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-dist
+          path: ./Views/dist
+
+  # =========================================================================
+  # JOB 3: Teste de Integração Docker + Stack de Observabilidade (Prometheus/Grafana)
+  # =========================================================================
+  integration-and-observability:
+    name: "3. Deploy & Smoke Test (Docker + Observabilidade)"
+    runs-on: ubuntu-latest
+    needs:
+      - build-backend
+      - build-frontend
+    steps:
+      - name: Checkout do código
+        uses: actions/checkout@v4
+
+      - name: Baixar artefato do Backend
+        uses: actions/download-artifact@v4
+        with:
+          name: backend-publish
+          path: ./publish
+
+      - name: Subir containers (Postgres, API, Prometheus e Grafana)
+        run: docker compose up -d --build
+
+      - name: Aguardar inicialização da API e testar rotas/métricas
+        run: |
+          echo "Aguardando a API iniciar na porta 5076..."
+          for i in {1..20}; do
+            if curl -s -f http://localhost:5076/metrics > /dev/null; then
+              echo "API online!"
+              break
+            fi
+            sleep 2
+          done
+
+          # 1. Cadastra pessoa e transação para validar fluxo com PostgreSQL
+          curl -s -f -X POST http://localhost:5076/api/Pessoas \
+            -H "Content-Type: application/json" \
+            -d '{"nome":"Joao Silva","idade":30,"cpf":"12345678901"}'
+
+          curl -s -f -X POST http://localhost:5076/api/Transacoes \
+            -H "Content-Type: application/json" \
+            -d '{"descricao":"Salario","valor":500.00,"tipo":"Receita","pessoaCpf":"12345678901"}'
+
+          # 2. Verifica se as métricas RED e de Negócio estão sendo expostas para o Prometheus
+          curl -s http://localhost:5076/metrics | grep "red_requests_errors_total"
+          curl -s http://localhost:5076/metrics | grep "business_volume_transacionado_reais_total"
+
+      - name: Limpar containers e volumes ao finalizar
+        if: always()
+        run: docker compose down -v

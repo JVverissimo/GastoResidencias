@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import api from './services/api';
+import api, { logEstruturado } from './services/api';
 
 function DashboardTotais() {
   const [dados, setDados] = useState({ pessoas: [], consolidadoGeral: {} });
@@ -14,7 +14,10 @@ function DashboardTotais() {
       const response = await api.get('/Totais');
       setDados(response.data);
     } catch (error) {
-      console.error("Erro ao carregar dados do dashboard", error);
+      logEstruturado('ERROR', 'Erro ao carregar dados do dashboard', {
+        correlationId: error.response?.headers?.['x-correlation-id'] || error.config?.metadata?.correlationId,
+        errorMessage: error.message,
+      });
     } finally {
       setLoading(false);
     }

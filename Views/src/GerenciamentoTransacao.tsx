@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import api from './services/api';
+import api, { logEstruturado } from './services/api';
 
 function GerenciarTransacoes() {
   const [transacoes, setTransacoes] = useState([]);
@@ -18,7 +18,10 @@ function GerenciarTransacoes() {
       const response = await api.get('/Transacoes');
       setTransacoes(response.data);
     } catch (error) {
-      console.error("Erro ao buscar histórico", error);
+      logEstruturado('ERROR', 'Erro ao buscar histórico de transações', {
+        correlationId: error.response?.headers?.['x-correlation-id'] || error.config?.metadata?.correlationId,
+        errorMessage: error.message,
+      });
     }
   };
 

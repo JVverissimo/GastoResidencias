@@ -1,0 +1,168 @@
+{
+  "annotations": {
+    "list": []
+  },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 1,
+  "id": null,
+  "links": [],
+  "panels": [
+    {
+      "id": 1,
+      "title": "RED - Taxa de Requisições por Segundo (Rate)",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 0 },
+      "datasource": { "type": "prometheus", "uid": "prometheus_ds" },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "reqps"
+        },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "expr": "red_requests_rate_per_second{window=\"60s\"}",
+          "legendFormat": "Taxa (Janela 60s)",
+          "refId": "A"
+        },
+        {
+          "expr": "rate(red_requests_total[1m])",
+          "legendFormat": "rate(red_requests_total[1m])",
+          "refId": "B"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "title": "RED - Total de Requisições com Erro (red_requests_errors_total)",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 0 },
+      "datasource": { "type": "prometheus", "uid": "prometheus_ds" },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "min": 0
+        },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "expr": "red_requests_errors_total",
+          "legendFormat": "Total de Erros (red_requests_errors_total)",
+          "refId": "A"
+        },
+        {
+          "expr": "red_requests_errors_by_class_total{status_class=\"4xx\"}",
+          "legendFormat": "Erros 4xx (Validação / Regra de Negócio)",
+          "refId": "B"
+        },
+        {
+          "expr": "red_requests_errors_by_class_total{status_class=\"5xx\"}",
+          "legendFormat": "Erros 5xx (Falha Interna / Servidor)",
+          "refId": "C"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "title": "RED - Latência / Duração das Respostas (Duration ms)",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 8 },
+      "datasource": { "type": "prometheus", "uid": "prometheus_ds" },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "ms"
+        },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "expr": "red_request_duration_stats_milliseconds{stat=\"avg\"}",
+          "legendFormat": "Média (avg)",
+          "refId": "A"
+        },
+        {
+          "expr": "red_request_duration_stats_milliseconds{stat=\"p50\"}",
+          "legendFormat": "Mediana (P50)",
+          "refId": "B"
+        },
+        {
+          "expr": "red_request_duration_stats_milliseconds{stat=\"p95\"}",
+          "legendFormat": "Percentil 95 (P95)",
+          "refId": "C"
+        },
+        {
+          "expr": "red_request_duration_stats_milliseconds{stat=\"p99\"}",
+          "legendFormat": "Percentil 99 (P99)",
+          "refId": "D"
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "title": "Negócio - Volume Financeiro Transacionado (business_volume_transacionado_reais_total)",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 8 },
+      "datasource": { "type": "prometheus", "uid": "prometheus_ds" },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "currencyBRL",
+          "min": 0
+        },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "expr": "business_volume_transacionado_reais_total",
+          "legendFormat": "Volume Bruto Total (business_volume_transacionado_reais_total)",
+          "refId": "A"
+        },
+        {
+          "expr": "business_volume_transacionado_por_tipo_reais_total{tipo=\"Receita\"}",
+          "legendFormat": "Volume Receitas (R$)",
+          "refId": "B"
+        },
+        {
+          "expr": "business_volume_transacionado_por_tipo_reais_total{tipo=\"Despesa\"}",
+          "legendFormat": "Volume Despesas (R$)",
+          "refId": "C"
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "title": "Requisições por Endpoint e Status HTTP",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 24, "x": 0, "y": 16 },
+      "datasource": { "type": "prometheus", "uid": "prometheus_ds" },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "expr": "http_requests_by_route_total",
+          "legendFormat": "{{method}} {{path}} [{{status_code}}]",
+          "refId": "A"
+        }
+      ]
+    }
+  ],
+  "refresh": "5s",
+  "schemaVersion": 39,
+  "tags": ["red", "negocio", "gasto-residencias"],
+  "templating": {
+    "list": []
+  },
+  "time": {
+    "from": "now-15m",
+    "to": "now"
+  },
+  "timezone": "browser",
+  "title": "GastoResidencias - Métricas RED e Negócio",
+  "uid": "gasto-residencias-red-biz",
+  "version": 1
+}
